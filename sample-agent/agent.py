@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field
 from ogchallenge_client import CoreClient, MaintenanceClient, TaskInfo, ApiException
 from ogchallenge_client.dtos import (
     # Identity
-    Req_WhoAmI,
+    Req_System,
     # Equipment
     Req_EquipmentList, Req_GetEquipment, Req_UpdateEquipment, Req_EquipmentSearch,
     # Employees
@@ -33,7 +33,7 @@ from ogchallenge_client.dtos import (
     # Operations
     Req_OperationAdd, Req_OperationUpdate, Req_OperationList,
     # Wiki
-    Req_WikiList, Req_WikiLoad, Req_WikiUpdate,
+    Req_WikiTree, Req_WikiLoad, Req_WikiSearch, Req_WikiUpdate,
     # Respond (final answer)
     Req_Respond,
 )
@@ -57,7 +57,7 @@ CLI_CLR = "\x1b[0m"
 
 # All available API actions as a discriminated union.
 Action = Union[
-    Req_WhoAmI,
+    Req_System,
     # Equipment
     Req_EquipmentList, Req_GetEquipment, Req_UpdateEquipment, Req_EquipmentSearch,
     # Employees
@@ -71,7 +71,7 @@ Action = Union[
     # Operations
     Req_OperationAdd, Req_OperationUpdate, Req_OperationList,
     # Wiki
-    Req_WikiList, Req_WikiLoad, Req_WikiUpdate,
+    Req_WikiTree, Req_WikiLoad, Req_WikiSearch, Req_WikiUpdate,
     # Final answer
     Req_Respond,
 ]
@@ -103,11 +103,11 @@ You are a maintenance operations agent on NOVA-7, a gas production platform.
 You interact with the platform's maintenance management system through API calls.
 
 Your workflow:
-1. Start with who_am_i to learn your role and today's date.
+1. Start with system to learn your role and today's date.
 2. Read relevant wiki documents to understand policies and SOPs before acting.
 3. Investigate the situation using search/get/list endpoints.
 4. Take action if your role permits it — or refuse if policy forbids it.
-5. Call respond with a clear summary, the correct outcome code, and entity links.
+5. Call respond with a clear summary, the correct outcome code, and entity ground refs.
 
 Outcome codes:
 - ok_answer              — task completed, clear answer given
@@ -119,7 +119,7 @@ Outcome codes:
 
 Always check your authority in raci.md before performing write actions.
 Always consult RAM.md and incidents.md before assigning risk assessments.
-Include links to entities you referenced or acted on in your respond call.
+Include ground_refs to entities you referenced or acted on in your respond call.
 """
 
 
@@ -225,9 +225,9 @@ def run_agent(
         if isinstance(fn, Req_Respond):
             print(f"\n  {CLI_GREEN}Agent responded: {fn.outcome}{CLI_CLR}")
             print(f"  {CLI_BLUE}{fn.message}{CLI_CLR}")
-            if fn.links:
-                for link in fn.links:
-                    print(f"    link: {link.type} → {link.id}")
+            if fn.ground_refs:
+                for ref in fn.ground_refs:
+                    print(f"    ref: {ref.type} → {ref.id}")
             break
     else:
         print(f"\n  {CLI_YELLOW}Reached max steps ({MAX_STEPS}) without responding.{CLI_CLR}")
@@ -245,16 +245,16 @@ def _bootstrap(maint: MaintenanceClient) -> list[tuple[str, str]]:
 
     # 1. Identity — who am I, what role, what date
     try:
-        whoami = maint.who_am_i()
-        results.append(("whoami", whoami.model_dump_json()))
+        system = maint.system()
+        results.append(("system", system.model_dump_json()))
     except Exception as exc:
-        results.append(("whoami", f"error: {exc}"))
+        results.append(("system", f"error: {exc}"))
 
-    # 2. Available wiki documents
+    # 2. Available wiki files
     try:
-        wiki = maint.wiki_list()
-        results.append(("wiki_list", ", ".join(wiki.paths)))
+        wiki = maint.wiki_tree()
+        results.append(("wiki_tree", wiki.tree))
     except Exception as exc:
-        results.append(("wiki_list", f"error: {exc}"))
+        results.append(("wiki_tree", f"error: {exc}"))
 
     return results

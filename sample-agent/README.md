@@ -15,7 +15,7 @@ agent.py  — agent loop + structured output schema + bootstrap
 
 The agent uses a **structured-output loop** (no traditional tool_use):
 
-1. **Bootstrap** — auto-runs `whoami` and `wiki_list` before the LLM starts
+1. **Bootstrap** — auto-runs `system` and `wiki_tree` before the LLM starts
 2. **Loop** — LLM returns a `NextStep` Pydantic model on each iteration:
    - `current_state` — what the agent knows so far
    - `plan` — remaining steps (1-5)
