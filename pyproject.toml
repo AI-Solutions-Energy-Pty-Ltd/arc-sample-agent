@@ -5,7 +5,8 @@ description = "Sample agent for the OGChallenge maintenance-ops benchmark"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "arc-ogchallenge>=0.2.0",
+    "arc-ogchallenge>=0.3.0",
+    "annotated-types>=0.7.0",
     "openai>=1.50.0",
     "pydantic>=2.0.0",
     "python-dotenv>=1.0.0",
