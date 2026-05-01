@@ -66,8 +66,8 @@ make task SPEC=notification_raise   # single task
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OGC_BASE_URL` | `http://localhost:8000` | OGChallenge server URL |
-| `OGC_AUTH_TOKEN` | — | Bearer token for API auth |
+| `OGC_BASE_URL` | `https://ai-agents-challenge.digital` | OGChallenge server URL |
+| `OGC_API_KEY` | — | API key for platform access |
 | `OPENAI_API_KEY` | — | OpenAI API key |
 | `MODEL_ID` | `gpt-4.1-2025-04-14` | Model to use |
 

@@ -9,8 +9,8 @@ Usage:
     python main.py --spec notification_raise
 
 Environment variables (see .env.example):
-    OGC_BASE_URL   — OGChallenge server URL (default: http://localhost:8000)
-    OGC_AUTH_TOKEN  — Bearer token for the API
+    OGC_BASE_URL   — OGChallenge server URL (default: https://ai-agents-challenge.digital)
+    OGC_API_KEY    — API key for the platform
     OPENAI_API_KEY  — OpenAI API key
     MODEL_ID        — model to use (default: gpt-4.1-2025-04-14)
 """
@@ -37,9 +37,14 @@ CLI_CLR = "\x1b[0m"
 
 
 def make_client() -> CoreClient:
-    base_url = os.getenv("OGC_BASE_URL", "http://localhost:8000")
+    base_url = os.getenv("OGC_BASE_URL", "https://ai-agents-challenge.digital")
+    api_key = os.getenv("OGC_API_KEY", "")
     auth_token = os.getenv("OGC_AUTH_TOKEN", "")
-    return CoreClient(base_url=base_url, auth_token=auth_token or None)
+    return CoreClient(
+        base_url=base_url,
+        api_key=api_key or None,
+        auth_token=auth_token or None,
+    )
 
 
 def run_session(api: CoreClient, workspace: str) -> None:
