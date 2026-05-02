@@ -1,4 +1,4 @@
-﻿[project]
+[project]
 name = "arc-sample-agent"
 version = "0.3.0"
 description = "Sample agent for the ARC maintenance-ops benchmark"

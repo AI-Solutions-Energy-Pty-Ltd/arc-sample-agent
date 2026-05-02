@@ -1,4 +1,4 @@
-﻿# ARC Sample Agent
+# ARC Sample Agent
 
 Starter template for the **ARC maintenance-ops** benchmark.
 
