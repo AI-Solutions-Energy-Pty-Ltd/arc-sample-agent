@@ -1,4 +1,4 @@
-﻿"""
+"""
 ARC sample agent - harness entry point.
 
 Usage:

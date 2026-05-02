@@ -1,4 +1,4 @@
-﻿"""
+"""
 Maintenance-ops sample agent - structured-output loop.
 
 Uses OpenAI structured output (response_format) with a Pydantic discriminated
