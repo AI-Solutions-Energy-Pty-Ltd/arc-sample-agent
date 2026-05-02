@@ -1,6 +1,6 @@
-﻿# OGChallenge Sample Agent
+﻿# ARC Sample Agent
 
-Starter template for the **OGChallenge maintenance-ops** benchmark.
+Starter template for the **ARC maintenance-ops** benchmark.
 
 This agent uses OpenAI structured output to interact with a simulated
 industrial maintenance management system on the NOVA-7 gas production platform.
@@ -13,15 +13,15 @@ main.py   - session/task orchestrator (start session -> run tasks -> submit)
 agent.py  - agent loop + structured output schema + bootstrap
 ```
 
-The agent uses a **structured-output loop** (no traditional tool_use):
+The agent uses a structured-output loop (no traditional tool_use):
 
-1. **Bootstrap** - auto-runs `system` and `wiki_tree` before the LLM starts
-2. **Loop** - LLM returns a `NextStep` Pydantic model on each iteration:
+1. Bootstrap - auto-runs `system` and `wiki_tree` before the LLM starts
+2. Loop - LLM returns a `NextStep` Pydantic model on each iteration:
    - `current_state` - what the agent knows so far
    - `plan` - remaining steps (1-5)
    - `function` - a discriminated union of all API requests
-3. **Dispatch** - `MaintenanceClient.dispatch()` routes the request to the API
-4. **Done** - loop exits when the agent calls `respond`
+3. Dispatch - `MaintenanceClient.dispatch()` routes the request to the API
+4. Done - loop exits when the agent calls `respond`
 
 All API request types are Pydantic models with a `type` discriminator field.
 The LLM picks one and fills in the parameters - no separate tool schemas needed.
@@ -45,7 +45,7 @@ uv sync
 
 ```bash
 cp .env.example .env
-# Edit .env with your platform and LLM credentials
+# Edit .env with your ARC platform and LLM credentials
 ```
 
 ### 3. Run
@@ -66,26 +66,27 @@ make task SPEC=notification_raise   # single task
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `OGC_BASE_URL` | `https://agentreliabilitychallenge.com` | OGChallenge server URL |
-| `OGC_API_KEY` | - | API key for platform access |
+| `ARC_BASE_URL` | `https://agentreliabilitychallenge.com` | ARC server URL |
+| `ARC_API_KEY` | - | API key for platform access |
 | `MODEL_PROVIDER` | `openai` | LLM provider: `openai` or `openrouter` |
 | `MODEL_ID` | `gpt-4.1-2025-04-14` | Model to use |
 | `OPENAI_API_KEY` | - | OpenAI API key |
 | `OPENROUTER_API_KEY` | - | OpenRouter API key |
 | `OPENROUTER_BASE_URL` | `https://openrouter.ai/api/v1` | OpenRouter-compatible API base URL |
 | `OPENROUTER_HTTP_REFERER` | - | Optional OpenRouter referer header |
-| `OPENROUTER_APP_NAME` | `OGChallenge Sample Agent` | Optional OpenRouter title header |
+| `OPENROUTER_APP_NAME` | `ARC Sample Agent` | Optional OpenRouter title header |
+
 
 ## Startup Validation
 
-At startup the sample agent now performs two preflight checks before it runs a task:
+At startup the sample agent performs two preflight checks before it runs a task:
 
 1. Platform connectivity and auth
 2. LLM provider connectivity, auth, and model existence
 
 This means configuration problems fail early with clear errors, for example:
-- wrong `OGC_BASE_URL`
-- missing or invalid `OGC_API_KEY`
+- wrong `ARC_BASE_URL`
+- missing or invalid `ARC_API_KEY`
 - missing provider API key
 - unsupported `MODEL_PROVIDER`
 - nonexistent `MODEL_ID`
@@ -109,12 +110,12 @@ This means configuration problems fail early with clear errors, for example:
 
 ## Customization Ideas
 
-- **Better prompting** - improve the system prompt with domain knowledge
-- **Bootstrap** - load more wiki docs upfront (RAM.md, raci.md)
-- **Multi-step planning** - add chain-of-thought reasoning
-- **Error recovery** - retry or adapt when API calls fail
-- **Different LLM** - swap OpenAI for Anthropic, Gemini, or local models
-- **Caching** - avoid re-reading the same wiki docs across steps
+- Better prompting - improve the system prompt with domain knowledge
+- Bootstrap - load more wiki docs upfront (RAM.md, raci.md)
+- Multi-step planning - add chain-of-thought reasoning
+- Error recovery - retry or adapt when API calls fail
+- Different LLM - swap OpenAI for Anthropic, Gemini, or local models
+- Caching - avoid re-reading the same wiki docs across steps
 
 ## LLM Providers
 
@@ -131,3 +132,4 @@ Both run through the OpenAI Python SDK. OpenRouter uses:
 
 If you want a different provider entirely, adapt the client creation in `agent.py`
 and the startup validation in `main.py`.
+

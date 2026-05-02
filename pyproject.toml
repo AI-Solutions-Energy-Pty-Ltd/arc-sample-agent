@@ -1,7 +1,7 @@
 ﻿[project]
-name = "ogchallenge-sample-agent"
-version = "0.1.0"
-description = "Sample agent for the OGChallenge maintenance-ops benchmark"
+name = "arc-sample-agent"
+version = "0.3.0"
+description = "Sample agent for the ARC maintenance-ops benchmark"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
