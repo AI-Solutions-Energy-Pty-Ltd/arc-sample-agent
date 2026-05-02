@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import textwrap
 from urllib.parse import urlparse
 
 from dotenv import load_dotenv
@@ -191,8 +190,10 @@ def run_session(api: CoreClient, workspace: str, llm_config: LLMConfig) -> None:
             score = result.eval.score
             scores.append((task_info.spec_id, score))
             style = CLI_GREEN if score >= 0.8 else CLI_RED
-            explain = textwrap.indent(result.eval.logs, "    ")
-            print(f"\n  {style}SCORE: {score:.2f}{CLI_CLR}\n{explain}")
+            print(f"\n  {style}SCORE: {score:.2f}{CLI_CLR}")
+            if score < 1.0 and result.eval.logs:
+                explain = "\n".join(f"    {line}" for line in result.eval.logs.splitlines())
+                print(f"{CLI_RED}{explain}{CLI_CLR}")
 
     print("\n" + "=" * 60)
     submitted = api.submit_session(session.session_id)
@@ -221,9 +222,12 @@ def run_single_task(api: CoreClient, spec_id: str, llm_config: LLMConfig) -> Non
 
     result = api.complete_task(task_info)
     if result.eval:
-        style = CLI_GREEN if result.eval.score >= 0.8 else CLI_RED
-        explain = textwrap.indent(result.eval.logs, "    ")
-        print(f"\n{style}SCORE: {result.eval.score:.2f}{CLI_CLR}\n{explain}")
+        score = result.eval.score
+        style = CLI_GREEN if score >= 0.8 else CLI_RED
+        print(f"\n{style}SCORE: {score:.2f}{CLI_CLR}")
+        if score < 1.0 and result.eval.logs:
+            explain = "\n".join(f"    {line}" for line in result.eval.logs.splitlines())
+            print(f"{CLI_RED}{explain}{CLI_CLR}")
     else:
         print(f"\nStatus: {result.status}")
 
