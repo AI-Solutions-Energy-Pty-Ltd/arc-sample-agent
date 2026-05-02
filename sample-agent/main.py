@@ -1,5 +1,5 @@
 ﻿"""
-OGChallenge sample agent - harness entry point.
+ARC sample agent - harness entry point.
 
 Usage:
     # Run all tasks in a full session
@@ -9,8 +9,8 @@ Usage:
     python main.py --spec notification_raise
 
 Environment variables (see .env.example):
-    OGC_BASE_URL       - OGChallenge server URL (default: https://agentreliabilitychallenge.com)
-    OGC_API_KEY        - API key for the platform
+    ARC_BASE_URL       - ARC server URL (default: https://agentreliabilitychallenge.com)
+    ARC_API_KEY        - API key for the platform
     MODEL_PROVIDER     - openai | openrouter
     OPENAI_API_KEY     - OpenAI API key
     OPENROUTER_API_KEY - OpenRouter API key
@@ -31,7 +31,7 @@ from ogchallenge_client import CoreClient, ApiException
 
 from agent import LLMConfig, make_llm_client, run_agent
 
-DEFAULT_OGC_BASE_URL = "https://agentreliabilitychallenge.com"
+DEFAULT_ARC_BASE_URL = "https://agentreliabilitychallenge.com"
 DEFAULT_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 DEFAULT_MODEL_ID = "gpt-4.1-2025-04-14"
 
@@ -56,14 +56,14 @@ def _validate_http_url(name: str, value: str) -> str:
 
 def _build_platform_client() -> CoreClient:
     base_url = _validate_http_url(
-        "OGC_BASE_URL",
-        os.getenv("OGC_BASE_URL", DEFAULT_OGC_BASE_URL),
+        "ARC_BASE_URL",
+        os.getenv("ARC_BASE_URL", DEFAULT_ARC_BASE_URL),
     )
-    api_key = os.getenv("OGC_API_KEY", "").strip()
-    auth_token = os.getenv("OGC_AUTH_TOKEN", "").strip()
+    api_key = os.getenv("ARC_API_KEY", "").strip()
+    auth_token = os.getenv("ARC_AUTH_TOKEN", "").strip()
     if not api_key and not auth_token:
         raise ConfigurationError(
-            "Platform credentials are missing. Set OGC_API_KEY (preferred) or OGC_AUTH_TOKEN in .env."
+            "Platform credentials are missing. Set ARC_API_KEY (preferred) or ARC_AUTH_TOKEN in .env."
         )
     return CoreClient(
         base_url=base_url,
@@ -93,7 +93,7 @@ def _build_llm_config() -> LLMConfig:
                 "OPENROUTER_API_KEY is required when MODEL_PROVIDER=openrouter."
             )
         referer = os.getenv("OPENROUTER_HTTP_REFERER", "").strip()
-        app_name = os.getenv("OPENROUTER_APP_NAME", "OGChallenge Sample Agent").strip()
+        app_name = os.getenv("OPENROUTER_APP_NAME", "ARC Sample Agent").strip()
         headers = {"X-Title": app_name}
         if referer:
             headers["HTTP-Referer"] = referer
@@ -120,17 +120,17 @@ def _preflight_platform(api: CoreClient) -> None:
     except ApiException as exc:
         if exc.status_code in {401, 403}:
             raise ConfigurationError(
-                "Platform authentication failed. Check OGC_API_KEY/OGC_AUTH_TOKEN."
+                "Platform authentication failed. Check ARC_API_KEY or ARC_AUTH_TOKEN."
             ) from exc
         if exc.api_error.code == "network_error" or exc.status_code == 0:
             raise ConfigurationError(
-                f"Cannot reach OGChallenge platform at {api.base_url}. Check OGC_BASE_URL, DNS, firewall, or whether the site is correct."
+                f"Cannot reach ARC platform at {api.base_url}. Check ARC_BASE_URL, DNS, firewall, or whether the site is correct."
             ) from exc
         raise ConfigurationError(f"Platform preflight failed: {exc}") from exc
 
     if not any(bench.id == "maintenance-ops" for bench in benchmarks.benchmarks):
         raise ConfigurationError(
-            "Platform is reachable, but benchmark 'maintenance-ops' was not found. Check that OGC_BASE_URL points to the challenge platform."
+            "Platform is reachable, but benchmark 'maintenance-ops' was not found. Check that ARC_BASE_URL points to the ARC challenge platform."
         )
     print(f"{CLI_GREEN}Platform OK{CLI_CLR}")
 
@@ -229,7 +229,7 @@ def run_single_task(api: CoreClient, spec_id: str, llm_config: LLMConfig) -> Non
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="OGChallenge sample agent")
+    parser = argparse.ArgumentParser(description="ARC sample agent")
     parser.add_argument("--spec", help="Run a single task by spec_id (skips session)")
     parser.add_argument("--workspace", default="dev", help="Session workspace tag (default: dev)")
     args = parser.parse_args()
@@ -254,3 +254,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
