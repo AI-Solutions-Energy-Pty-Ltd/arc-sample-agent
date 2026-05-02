@@ -79,7 +79,6 @@ class NextStep(BaseModel):
     task_completed: bool = Field(False, description="Set to true only when calling respond")
     function: Action = Field(
         ...,
-        discriminator="type",
         description="The next API call to execute",
     )
 
@@ -164,7 +163,9 @@ def run_agent(
 
         fn = step.function
         fn_type = fn.type
+        fn_args = fn.model_dump_json(exclude_none=True, exclude={"type"})
         print(f"{CLI_CYAN}{fn_type}{CLI_CLR} - {step.plan[0]}  ({elapsed_ms}ms)")
+        print(f"    {CLI_YELLOW}args:{CLI_CLR} {fn_args[:300]}")
 
         try:
             api.log_llm(
