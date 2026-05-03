@@ -2,4 +2,5 @@
 *.egg-info
 .env
 .venv
+venv
 uv.lock
