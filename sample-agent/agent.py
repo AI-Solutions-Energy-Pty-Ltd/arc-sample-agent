@@ -21,11 +21,11 @@ from pydantic import BaseModel, Field
 from ogchallenge_client import CoreClient, MaintenanceClient, TaskInfo, ApiException
 from ogchallenge_client.dtos import (
     Req_System,
-    Req_EquipmentList, Req_GetEquipment, Req_UpdateEquipment, Req_EquipmentSearch,
-    Req_EmployeeList, Req_GetEmployee, Req_UpdateEmployee, Req_EmployeeSearch,
-    Req_MaterialList, Req_MaterialGet, Req_MaterialSearch, Req_MaterialReorder,
+    Req_GetEquipment, Req_UpdateEquipment, Req_EquipmentSearch,
+    Req_GetEmployee, Req_UpdateEmployee, Req_EmployeeSearch,
+    Req_MaterialGet, Req_MaterialSearch,
     Req_NotifCreate, Req_NotifGet, Req_NotifSearch, Req_NotifUpdate,
-    Req_WOList, Req_WOSearch, Req_WOCreate, Req_WOGet, Req_WOUpdate,
+    Req_WOSearch, Req_WOCreate, Req_WOGet, Req_WOUpdate,
     Req_OperationAdd, Req_OperationUpdate, Req_OperationList,
     Req_WikiTree, Req_WikiLoad, Req_WikiSearch, Req_WikiUpdate,
     Req_Respond,
@@ -59,11 +59,11 @@ def make_llm_client(config: LLMConfig) -> OpenAI:
 
 Action = Union[
     Req_System,
-    Req_EquipmentList, Req_GetEquipment, Req_UpdateEquipment, Req_EquipmentSearch,
-    Req_EmployeeList, Req_GetEmployee, Req_UpdateEmployee, Req_EmployeeSearch,
-    Req_MaterialList, Req_MaterialGet, Req_MaterialSearch, Req_MaterialReorder,
+    Req_GetEquipment, Req_UpdateEquipment, Req_EquipmentSearch,
+    Req_GetEmployee, Req_UpdateEmployee, Req_EmployeeSearch,
+    Req_MaterialGet, Req_MaterialSearch,
     Req_NotifCreate, Req_NotifGet, Req_NotifSearch, Req_NotifUpdate,
-    Req_WOList, Req_WOSearch, Req_WOCreate, Req_WOGet, Req_WOUpdate,
+    Req_WOSearch, Req_WOCreate, Req_WOGet, Req_WOUpdate,
     Req_OperationAdd, Req_OperationUpdate, Req_OperationList,
     Req_WikiTree, Req_WikiLoad, Req_WikiSearch, Req_WikiUpdate,
     Req_Respond,
@@ -134,13 +134,12 @@ You interact with the platform's maintenance management system through API calls
 Your workflow:
 1. Start with system to learn your role and today's date.
 2. Read relevant wiki documents to understand policies and SOPs before acting.
-3. Investigate the situation using search/get/list endpoints.
+3. Investigate the situation using search/get endpoints. Avoid broad global list endpoints.
 4. Take action if your role permits it - or refuse if policy forbids it.
 5. Call respond with a clear summary, the correct outcome code, and entity ground refs.
 
 Outcome codes:
 - ok_answer              - task completed, clear answer given
-- ok_not_found           - requested information doesn't exist
 - denied_security        - your role or policy doesn't permit the action
 - none_clarification_needed - task is ambiguous, need more info
 - none_unsupported       - can't do this with available tools
@@ -165,7 +164,7 @@ def run_agent(
     client = make_llm_client(llm_config)
     maint = api.get_maintenance_client(task)
 
-    print(f"\n{CLI_CYAN}Task {task.num}: {task.spec_id}{CLI_CLR}")
+    print(f"\n{CLI_CYAN}Task: {task.spec_id}{CLI_CLR}")
     print(f"  {task.task_text}\n")
 
     bootstrap_log = _bootstrap(maint)
@@ -212,10 +211,12 @@ def run_agent(
             step = resp.output_parsed
             prompt_tokens = resp.usage.input_tokens if resp.usage else None
             completion_tokens = resp.usage.output_tokens if resp.usage else None
+            cached_prompt_tokens = getattr(getattr(resp.usage, "input_tokens_details", None), "cached_tokens", None)
         else:
             step = resp.choices[0].message.parsed
             prompt_tokens = resp.usage.prompt_tokens if resp.usage else None
             completion_tokens = resp.usage.completion_tokens if resp.usage else None
+            cached_prompt_tokens = getattr(getattr(resp.usage, "prompt_tokens_details", None), "cached_tokens", None)
 
         if step is None:
             print(f"{CLI_RED}LLM returned unparseable response{CLI_CLR}")
@@ -234,6 +235,7 @@ def run_agent(
                 model=llm_config.model,
                 duration_sec=(time.time() - t0),
                 prompt_tokens=prompt_tokens,
+                cached_prompt_tokens=cached_prompt_tokens if isinstance(cached_prompt_tokens, int) else None,
                 completion_tokens=completion_tokens,
             )
         except Exception:

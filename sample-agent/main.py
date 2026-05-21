@@ -8,6 +8,9 @@ Usage:
     # Run a single task by spec_id (development mode)
     python main.py --spec notification_raise
 
+    # Run a single task by platform task code (development mode)
+    python main.py --task <task_code>
+
 Environment variables (see .env.example):
     ARC_BASE_URL       - ARC server URL (default: https://agentreliabilitychallenge.com)
     ARC_API_KEY        - API key for the platform
@@ -208,12 +211,12 @@ def run_session(api: CoreClient, workspace: str, llm_config: LLMConfig) -> None:
         print(f"\n  FINAL: {total:.1f}%")
 
 
-def run_single_task(api: CoreClient, spec_id: str, llm_config: LLMConfig) -> None:
-    """Start a standalone task by spec_id (for development/testing)."""
+def run_single_task(api: CoreClient, task: str, llm_config: LLMConfig) -> None:
+    """Start a standalone task (for development/testing). `task` accepts a task code or spec_id."""
     print(
-        f"Starting standalone task: spec={spec_id!r}, provider={llm_config.provider!r}, model={llm_config.model!r}\n"
+        f"Starting standalone task: task={task!r}, provider={llm_config.provider!r}, model={llm_config.model!r}\n"
     )
-    task_info = api.start_new_task(benchmark="maintenance-ops", spec_id=spec_id)
+    task_info = api.start_new_task(benchmark="maintenance-ops", task=task)
 
     try:
         run_agent(api, task_info, llm_config=llm_config)
@@ -234,7 +237,9 @@ def run_single_task(api: CoreClient, spec_id: str, llm_config: LLMConfig) -> Non
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="ARC sample agent")
-    parser.add_argument("--spec", help="Run a single task by spec_id (skips session)")
+    single = parser.add_mutually_exclusive_group()
+    single.add_argument("--task", help="Run a single task by task code or spec_id (skips session)")
+    single.add_argument("--spec", help="Alias for --task, kept for compatibility")
     parser.add_argument("--workspace", default="dev", help="Session workspace tag (default: dev)")
     args = parser.parse_args()
 
@@ -250,8 +255,13 @@ def main() -> None:
         print(f"{CLI_RED}Startup failed:{CLI_CLR} {exc}")
         raise SystemExit(2) from exc
 
-    if args.spec:
-        run_single_task(api, args.spec, llm_config)
+    task_input = args.task or args.spec
+    if task_input:
+        try:
+            run_single_task(api, task_input, llm_config)
+        except ValueError as exc:
+            print(f"{CLI_RED}Configuration error:{CLI_CLR} {exc}")
+            raise SystemExit(2) from exc
     else:
         run_session(api, workspace=args.workspace, llm_config=llm_config)
 

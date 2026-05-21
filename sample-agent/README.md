@@ -56,10 +56,12 @@ python main.py
 
 # Run a single task (development mode)
 python main.py --spec notification_raise
+python main.py --task <task_code>
 
 # With make
 make run                            # full session
 make task SPEC=notification_raise   # single task
+make task TASK=<task_code>          # single task by platform task code
 ```
 
 ## Environment Variables
@@ -91,22 +93,11 @@ This means configuration problems fail early with clear errors, for example:
 - unsupported `MODEL_PROVIDER`
 - nonexistent `MODEL_ID`
 
-## Available Tasks
+## Task Codes
 
-| Spec ID | Role | Challenge |
-|---------|------|-----------|
-| `opportunity_for_repair` | Operations Supervisor | Check material stock for valve repair |
-| `notification_raise` | Field Operator | Create notification with risk assessment |
-| `planner_assist` | Instrumentation Engineer | Calculate MECH team remaining capacity |
-| `not_their_business` | Electrical Engineer | Refuse to close INST work order |
-| `which_one_boss` | OIM | Identify ambiguous equipment reference |
-| `obsolete_material` | Instrumentation Technician | Find replacement for obsolete part |
-| `document_review_1` | Mechanical Technician | Refuse wiki update (no authority) |
-| `document_review_2` | Mechanical Engineer | Update wiki document |
-| `operation_update` | Electrical Engineer | Handle insufficient stock error |
-| `notification_search` | Maintenance Supervisor | Find Red-rated notifications |
-| `workorder_completion` | Electrical Technician | Close completed work order |
-| `work_scheduling` | Maintenance Planner | Reschedule work order |
+Public task codes are provided by the ARC platform benchmark metadata. The
+sample agent resolves `--task <task_code>` through the platform and then starts
+the resolved benchmark spec with the normal SDK flow.
 
 ## Customization Ideas
 
