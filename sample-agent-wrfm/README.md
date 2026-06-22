@@ -57,5 +57,6 @@ make task SPEC=wrfm_def_001
 - `wrfm-ops` may be hidden from public benchmark metadata. For single-task
   development this runner creates a WRFM session and selects the exact `spec_id`
   from `session_status`.
-- Ground refs for WRFM are limited to `wiki`, `table`, and `well`.
+- Ground refs for WRFM are limited to `wiki`, `table`, `well`, and `deferment_event`.
+- Use `deferment_event` with `id` equal to the `EVENT_KEY` value from `deferments`.
 - The WRFM API is flat-table only in V1: no joins, group-by, views, or SQL parser.

@@ -124,12 +124,6 @@ Your workflow:
 5. Use data_create or data_update only when the task and role authority clearly permit it.
 6. Call wrfm_respond with a concise answer, correct outcome, and WRFM ground refs.
 
-WRFM V1 constraints:
-- no SQL parser, joins, group-by, views, or aggregate endpoint;
-- data_select supports one table with simple filters, ordering, limit, and offset;
-- only deferments is mutable in V1;
-- ground refs are limited to wiki, table, and well.
-
 Outcome codes:
 - ok_answer
 - denied_security
@@ -137,8 +131,9 @@ Outcome codes:
 - none_unsupported
 - error_internal
 
-Always check governance/raci.md before write actions.
-Use deferment/deferment_guide.md for deferment event and production-day rules.
+Always check necessary governance documents before write actions.
+Use deferment guidelines for deferment event and production-day rules.
+Use extensive ground refs to reference the exact source of your knowledge and authority, especially for write actions.
 Do not mutate records when the task asks only for review, anomaly checking, or clarification.
 """
 
